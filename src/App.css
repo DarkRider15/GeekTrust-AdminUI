@@ -1,0 +1,14 @@
+.container{
+  margin-top: 2rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+.AdminDashboard{
+  text-align: center;
+  font-size: xx-large;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-variant-caps:titling-caps;
+}
+body{
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
