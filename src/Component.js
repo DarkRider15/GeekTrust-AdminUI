@@ -10,7 +10,6 @@ import IconButton from "@mui/material/IconButton";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 
-
 export default function TableComponent({
   headers,
   users,
@@ -34,7 +33,7 @@ export default function TableComponent({
               />
             </TableCell>
             {headers.map((header) => (
-              <TableCell key={header.id} sx={{ fontWeight: "1000" }}>
+              <TableCell key={header.id} sx={{ fontWeight: 1000 }}>
                 {header.label}
               </TableCell>
             ))}
@@ -44,9 +43,7 @@ export default function TableComponent({
           {users.map((user) => (
             <TableRow
               key={user.id}
-              sx={{
-                ...(isSelected(user.name) && { backgroundColor: "#D3D3D3" }),
-              }}
+              sx={{ ...(isSelected(user.name) && { backgroundColor: "#D3D3D3" }) }}
               onClick={(event) => handleClick(event, user.name)}
             >
               <TableCell padding="checkbox">

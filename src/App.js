@@ -1,13 +1,13 @@
 import './App.css';
+import { useState, useEffect } from "react";
+import { Box } from "@mui/system";
 import TextField from "@mui/material/TextField";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
-import { Box } from "@mui/system";
-import TableComponent from "./Component";
-import { useEffect, useState } from "react";
-import { getUsers } from "./users/getUsers";
 import { Button } from "@mui/material";
+import TableComponent from "./Component";
 import EditSection from "./Editor";
+import { getUsers } from "./users/getUsers";
 
 const headers = [
   { id: "name", label: "Name" },
@@ -16,14 +16,13 @@ const headers = [
   { id: "actions", label: "Actions" },
 ];
 const recordsPerPage = 10;
-const startPage = 1
+const startPage = 1;
 
 function App() {
-
   const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState([]);
   const [count, setCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(startPage);
   const [dataToBeDisplayed, setDataToBeDisplayed] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchNotFound, setSearchNotFound] = useState(false);
@@ -37,6 +36,8 @@ function App() {
       .then((data) => {
         setUsers(data);
         setFilteredUsers(data);
+        setCount(Math.ceil(data.length / recordsPerPage));
+        setDataToBeDisplayed(prepareDataToBeDisplayed(data, startPage));
       })
       .catch((error) => console.log(error));
   }, []);
@@ -52,19 +53,15 @@ function App() {
       setFilteredUsers(users);
       setSearchNotFound(false);
     } else {
-      const results = searchResults(searchText);
+      const results = searchUsers(searchText);
       if (results.length > 0) {
-        setSearchNotFound(false);
         setFilteredUsers(results);
+        setSearchNotFound(false);
       } else {
         setSearchNotFound(true);
       }
     }
   }, [searchText]);
-
-  const handleSearch = (event) => {
-    setSearchText(event.target.value);
-  };
 
   const prepareDataToBeDisplayed = (userList, pageNumber) => {
     setSelectAll(false);
@@ -74,42 +71,29 @@ function App() {
     return userList.slice(startIndex, endIndex);
   };
 
-  const searchByName = (name) => {
-    const lowerCaseName = name.toLowerCase();
-    return users.filter((user) =>
-      user.name.toLowerCase().includes(lowerCaseName)
-    );
-  };
-const searchByEmail = (email) => {
-    const lowerCaseEmail = email.toLowerCase();
-    return users.filter((user) =>
-      user.email.toLowerCase().includes(lowerCaseEmail)
-    );
-  };
-const searchByRole = (role) => {
-    const lowerCaseRole = role.toLowerCase();
-    return users.filter((user) =>
-      user.role.toLowerCase().includes(lowerCaseRole)
-    );
-  };
-  const searchResults = (searchText) => {
-    const searchResultsByName = searchByName(searchText);
-    const searchResultsByEmail = searchByEmail(searchText);
-    const searchResultsByRole = searchByRole(searchText);
-
-    if (searchResultsByName.length) {
-      return searchResultsByName;
-    } else if (searchResultsByEmail.length) {
-      return searchResultsByEmail;
-    } else {
-      return searchResultsByRole;
-    }
+  const searchUsers = (searchText) => {
+    const lowerCaseSearchText = searchText.toLowerCase();
+    return users.filter((user) => {
+      const { name, email, role } = user;
+      const lowerCaseName = name.toLowerCase();
+      const lowerCaseEmail = email.toLowerCase();
+      const lowerCaseRole = role.toLowerCase();
+      return (
+        lowerCaseName.includes(lowerCaseSearchText) ||
+        lowerCaseEmail.includes(lowerCaseSearchText) ||
+        lowerCaseRole.includes(lowerCaseSearchText)
+      );
+    });
   };
 
-  const handlePage = (event, value, userList) => {
+  const handleSearch = (event) => {
+    setSearchText(event.target.value);
+  };
+
+  const handlePage = (event, value) => {
     setCurrentPage(value);
     setSelectAll(false);
-    setDataToBeDisplayed(prepareDataToBeDisplayed(userList, value));
+    setDataToBeDisplayed(prepareDataToBeDisplayed(filteredUsers, value));
   };
 
   const handleSelectAllClick = (event) => {
@@ -117,10 +101,10 @@ const searchByRole = (role) => {
       const newSelected = dataToBeDisplayed.map((n) => n.name);
       setSelectAll(true);
       setSelected(newSelected);
-      return;
+    } else {
+      setSelectAll(false);
+      setSelected([]);
     }
-    setSelectAll(false);
-    setSelected([]);
   };
 
   const handleClick = (event, name) => {
@@ -128,22 +112,15 @@ const searchByRole = (role) => {
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
+      newSelected = [...selected, name];
+    } else {
+      newSelected = selected.filter((item) => item !== name);
     }
 
     setSelected(newSelected);
   };
 
-  const isSelected = (name) => selected.indexOf(name) !== -1;
+  const isSelected = (name) => selected.includes(name);
 
   const handleEdit = (userId) => {
     setIsEdit(true);
@@ -159,11 +136,10 @@ const searchByRole = (role) => {
           email: data.email,
           role: data.role,
         };
-      } else {
-        return user;
       }
+      return user;
     });
-    console.log(newData);
+
     setUsers(newData);
     setFilteredUsers(newData);
     setIsEdit(false);
@@ -181,7 +157,7 @@ const searchByRole = (role) => {
     setFilteredUsers(newData);
   };
 
-  const handleDeleteSelected = (selected) => {
+  const handleDeleteSelected = () => {
     const newData = users.filter((user) => !selected.includes(user.name));
     setUsers(newData);
     setFilteredUsers(newData);
@@ -189,7 +165,7 @@ const searchByRole = (role) => {
 
   return (
     <div className="container">
-      <h3 className='AdminDashboard'>Admin Dashboard</h3>
+      <h3 className="AdminDashboard">Admin Dashboard</h3>
       <Box mb={2}>
         <TextField
           fullWidth
@@ -231,7 +207,7 @@ const searchByRole = (role) => {
               <Button
                 variant="contained"
                 color="error"
-                onClick={() => handleDeleteSelected(selected)}
+                onClick={handleDeleteSelected}
               >
                 Delete Selected
               </Button>
@@ -239,9 +215,7 @@ const searchByRole = (role) => {
                 count={count}
                 showFirstButton
                 showLastButton
-                onChange={(event, value) =>
-                  handlePage(event, value, filteredUsers)
-                }
+                onChange={handlePage}
                 page={currentPage}
               />
             </Stack>

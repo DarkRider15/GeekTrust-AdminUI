@@ -8,38 +8,20 @@ export default function EditSection({
   handleSubmit,
   handleCancel,
 }) {
-  const [editData, setEditData] = useState({
-    name: getUserName(users, userId),
-    email: getUserEmail(users, userId),
-    role: getUserRole(users, userId),
-  });
+  const [editData, setEditData] = useState(() => getUserData(users, userId));
 
-  function getUserName(users, userId) {
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].id === userId) {
-        return users[i].name;
-      }
-    }
-  }
-
-  function getUserEmail(users, userId) {
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].id === userId) {
-        return users[i].email;
-      }
-    }
-  }
-
-  function getUserRole(users, userId) {
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].id === userId) {
-        return users[i].role;
-      }
-    }
+  function getUserData(users, userId) {
+    const user = users.find((user) => user.id === userId);
+    return {
+      name: user?.name || "",
+      email: user?.email || "",
+      role: user?.role || "",
+    };
   }
 
   const handleEditData = (event) => {
-    setEditData({ ...editData, [event.target.name]: event.target.value });
+    const { name, value } = event.target;
+    setEditData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   return (
