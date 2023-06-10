@@ -1,14 +1,16 @@
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Checkbox from "@mui/material/Checkbox";
-import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import IconButton from "@mui/material/IconButton";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
+import React from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Checkbox,
+  IconButton,
+  Paper,
+} from '@mui/material';
+import { BorderColorOutlined as BorderColorOutlinedIcon, DeleteOutline as DeleteOutlineIcon } from '@mui/icons-material';
 
 export default function TableComponent({
   headers,
@@ -43,7 +45,7 @@ export default function TableComponent({
           {users.map((user) => (
             <TableRow
               key={user.id}
-              sx={{ ...(isSelected(user.name) && { backgroundColor: "#D3D3D3" }) }}
+              sx={{ ...(isSelected(user.name) && { backgroundColor: '#D3D3D3' }) }}
               onClick={(event) => handleClick(event, user.name)}
             >
               <TableCell padding="checkbox">

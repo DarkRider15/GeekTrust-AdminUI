@@ -1,10 +1,10 @@
-import './App.css';
+import "./App.css";
 import { useState, useEffect } from "react";
-import { Box } from "@mui/system";
+import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
-import { Button } from "@mui/material";
+import Button from "@mui/material/Button";
 import TableComponent from "./Component";
 import EditSection from "./Editor";
 import { getUsers } from "./users/getUsers";
@@ -23,13 +23,10 @@ function App() {
   const [users, setUsers] = useState([]);
   const [count, setCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(startPage);
-  const [dataToBeDisplayed, setDataToBeDisplayed] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchNotFound, setSearchNotFound] = useState(false);
   const [selected, setSelected] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [userEdit, setUserEdit] = useState(-1);
+  const [editUserId, setEditUserId] = useState(null);
 
   useEffect(() => {
     getUsers()
@@ -37,7 +34,6 @@ function App() {
         setUsers(data);
         setFilteredUsers(data);
         setCount(Math.ceil(data.length / recordsPerPage));
-        setDataToBeDisplayed(prepareDataToBeDisplayed(data, startPage));
       })
       .catch((error) => console.log(error));
   }, []);
@@ -45,10 +41,24 @@ function App() {
   useEffect(() => {
     setCount(Math.ceil(filteredUsers.length / recordsPerPage));
     setCurrentPage(startPage);
-    setDataToBeDisplayed(prepareDataToBeDisplayed(filteredUsers, startPage));
   }, [filteredUsers]);
 
   useEffect(() => {
+    const searchUsers = (searchText) => {
+      const lowerCaseSearchText = searchText.toLowerCase();
+      return users.filter((user) => {
+        const { name, email, role } = user;
+        const lowerCaseName = name.toLowerCase();
+        const lowerCaseEmail = email.toLowerCase();
+        const lowerCaseRole = role.toLowerCase();
+        return (
+          lowerCaseName.includes(lowerCaseSearchText) ||
+          lowerCaseEmail.includes(lowerCaseSearchText) ||
+          lowerCaseRole.includes(lowerCaseSearchText)
+        );
+      });
+    };
+
     if (searchText.length === 0) {
       setFilteredUsers(users);
       setSearchNotFound(false);
@@ -61,30 +71,7 @@ function App() {
         setSearchNotFound(true);
       }
     }
-  }, [searchText]);
-
-  const prepareDataToBeDisplayed = (userList, pageNumber) => {
-    setSelectAll(false);
-    setSelected([]);
-    const endIndex = pageNumber * recordsPerPage;
-    const startIndex = endIndex - recordsPerPage;
-    return userList.slice(startIndex, endIndex);
-  };
-
-  const searchUsers = (searchText) => {
-    const lowerCaseSearchText = searchText.toLowerCase();
-    return users.filter((user) => {
-      const { name, email, role } = user;
-      const lowerCaseName = name.toLowerCase();
-      const lowerCaseEmail = email.toLowerCase();
-      const lowerCaseRole = role.toLowerCase();
-      return (
-        lowerCaseName.includes(lowerCaseSearchText) ||
-        lowerCaseEmail.includes(lowerCaseSearchText) ||
-        lowerCaseRole.includes(lowerCaseSearchText)
-      );
-    });
-  };
+  }, [searchText, users]);
 
   const handleSearch = (event) => {
     setSearchText(event.target.value);
@@ -92,17 +79,13 @@ function App() {
 
   const handlePage = (event, value) => {
     setCurrentPage(value);
-    setSelectAll(false);
-    setDataToBeDisplayed(prepareDataToBeDisplayed(filteredUsers, value));
   };
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = dataToBeDisplayed.map((n) => n.name);
-      setSelectAll(true);
+      const newSelected = filteredUsers.map((user) => user.name);
       setSelected(newSelected);
     } else {
-      setSelectAll(false);
       setSelected([]);
     }
   };
@@ -123,44 +106,32 @@ function App() {
   const isSelected = (name) => selected.includes(name);
 
   const handleEdit = (userId) => {
-    setIsEdit(true);
-    setUserEdit(userId);
+    setEditUserId(userId);
   };
 
   const handleSubmit = (userId, data) => {
-    const newData = users.map((user) => {
-      if (user.id === userId) {
-        return {
-          id: userId,
-          name: data.name,
-          email: data.email,
-          role: data.role,
-        };
-      }
-      return user;
-    });
-
-    setUsers(newData);
-    setFilteredUsers(newData);
-    setIsEdit(false);
-    setUserEdit(-1);
+    const updatedUsers = users.map((user) =>
+      user.id === userId ? { ...user, ...data } : user
+    );
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setEditUserId(null);
   };
 
   const handleCancel = () => {
-    setIsEdit(false);
-    setUserEdit(-1);
+    setEditUserId(null);
   };
 
   const handleDelete = (userId) => {
-    const newData = users.filter((user) => user.id !== userId);
-    setUsers(newData);
-    setFilteredUsers(newData);
+    const updatedUsers = users.filter((user) => user.id !== userId);
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
   };
 
   const handleDeleteSelected = () => {
-    const newData = users.filter((user) => !selected.includes(user.name));
-    setUsers(newData);
-    setFilteredUsers(newData);
+    const updatedUsers = users.filter((user) => !selected.includes(user.name));
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
   };
 
   return (
@@ -176,11 +147,11 @@ function App() {
           onChange={handleSearch}
         />
       </Box>
-      {isEdit && (
+      {editUserId && (
         <Box m={1}>
           <EditSection
             users={users}
-            userId={userEdit}
+            userId={editUserId}
             handleSubmit={handleSubmit}
             handleCancel={handleCancel}
           />
@@ -194,11 +165,10 @@ function App() {
         <Box>
           <TableComponent
             headers={headers}
-            users={dataToBeDisplayed}
+            users={filteredUsers}
             handleSelectAllClick={handleSelectAllClick}
             handleClick={handleClick}
             isSelected={isSelected}
-            selectAll={selectAll}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
           />

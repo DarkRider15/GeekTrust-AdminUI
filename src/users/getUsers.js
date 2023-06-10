@@ -1,14 +1,13 @@
-import axios from "axios";
-
-export const ENDPOINT =
-  "https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json";
+import axios from 'axios';
 
 export const getUsers = async () => {
   try {
-    const { data } = await axios.get(ENDPOINT);
+    const endpoint =
+      'https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json';
+
+    const { data } = await axios.get(endpoint);
     return data;
   } catch (error) {
-    console.log(error);
-    return [];
+    throw error;
   }
 };

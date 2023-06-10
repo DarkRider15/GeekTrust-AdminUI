@@ -1,26 +1,19 @@
-import { useState } from "react";
-import { Button, TextField } from "@mui/material";
-import Stack from "@mui/material/Stack";
+import React, { useState } from 'react';
+import { Button, TextField, Stack } from '@mui/material';
 
-export default function EditSection({
-  users,
-  userId,
-  handleSubmit,
-  handleCancel,
-}) {
+export default function EditSection({ users, userId, handleSubmit, handleCancel }) {
   const [editData, setEditData] = useState(() => getUserData(users, userId));
 
   function getUserData(users, userId) {
     const user = users.find((user) => user.id === userId);
     return {
-      name: user?.name || "",
-      email: user?.email || "",
-      role: user?.role || "",
+      name: user?.name || '',
+      email: user?.email || '',
+      role: user?.role || '',
     };
   }
 
-  const handleEditData = (event) => {
-    const { name, value } = event.target;
+  const handleEditData = ({ target: { name, value } }) => {
     setEditData((prevData) => ({ ...prevData, [name]: value }));
   };
 
@@ -50,11 +43,7 @@ export default function EditSection({
         value={editData.role}
         onChange={handleEditData}
       />
-      <Button
-        variant="contained"
-        size="small"
-        onClick={() => handleSubmit(userId, editData)}
-      >
+      <Button variant="contained" size="small" onClick={() => handleSubmit(userId, editData)}>
         Save
       </Button>
       <Button variant="contained" size="small" onClick={handleCancel}>
